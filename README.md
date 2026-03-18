@@ -1,66 +1,73 @@
-\# 🚗 Car Price Predictor
+# 🚗 Used Car Price Predictor
 
+A machine learning web app that predicts the resale value of used cars using Linear Regression, built with Streamlit.
 
+---
 
-A machine learning project that predicts used car prices using Linear Regression.
-
-
-
-\## 📁 Project Structure
-
+## 📁 Project Structure
+```
 usedcar_pricepredictor_ml/
-
-├── data/
-
-├── model/
-
-├── api/
-
-├── frontend/
-
+├── Data/
+│   └── cardekho_dataset.csv
+├── Model/
+│   ├── Train_model.ipynb
+│   ├── car_price_model.pkl
+│   ├── scaler.pkl
+│   └── model_columns.json
+├── Frontend/
+│   └── app.py
 ├── requirements.txt
-
 └── README.md
+```
 
+---
 
+## 🤖 Model Performance
 
-\## 🤖 Model Performance
+| Metric | Value |
+|--------|-------|
+| Algorithm | Linear Regression |
+| R² Score | 0.89 |
+| MAE | ₹1,36,469 |
+| Overfitting | None |
 
-\- Algorithm: Linear Regression
+---
 
-\- R² Score: 0.89
+## 🛠️ Tech Stack
 
-\- MAE: ₹1,36,469
+- **Language:** Python
+- **ML:** Scikit-learn, Pandas, NumPy
+- **Frontend:** Streamlit
+- **Dataset:** Cardekho Used Cars Dataset
 
+---
 
+## 🚀 How to Run Locally
 
-\## 🛠️ Tech Stack
+**1. Clone the repo**
+```bash
+git clone https://github.com/hamzaihsan475/usedcar_pricepredictor_ml.git
+cd usedcar_pricepredictor_ml
+```
 
-\- Python, Scikit-learn
+**2. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
 
-\- FastAPI
+**3. Run the app**
+```bash
+streamlit run Frontend/app.py
+```
 
-\- Streamlit
+App will open at `http://localhost:8501`
 
-\- Pandas, NumPy
+---
 
+## 🔍 Features
 
-
-\## 🚀 How to Run
-
-
-
-\### Start API
-
-cd api
-
-uvicorn main:app --reload
-
-
-
-\### Start Frontend
-
-cd frontend
-
-streamlit run app.py
-
+- Predicts resale price based on:
+  - Vehicle age, KM driven, Mileage, Engine size, Max power
+  - Brand, Fuel type, Transmission, Seller type
+- Clean and minimal UI
+- Instant predictions with no backend server needed
