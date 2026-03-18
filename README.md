@@ -1,7 +1,7 @@
 # 🚗 Used Car Price Predictor
 
 A machine learning web app that predicts the resale value of used cars using Linear Regression, built with Streamlit.
-# 🚗 Used Car Price Predictor
+
 
 🌐 **Live Demo:** [https://usedcarpricepredictorr.streamlit.app/](https://usedcarpricepredictorr.streamlit.app/)
 ---
