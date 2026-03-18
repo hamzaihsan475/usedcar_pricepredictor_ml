@@ -1,5 +1,20 @@
 import streamlit as st
-import requests
+import joblib
+import json
+import numpy as np
+import pandas as pd
+import os
+
+# ─── Load Model ────────────────────────────────────────────────
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "../Model")
+
+model = joblib.load(os.path.join(MODEL_DIR, "car_price_model.pkl"))
+scaler = joblib.load(os.path.join(MODEL_DIR, "scaler.pkl"))
+
+with open(os.path.join(MODEL_DIR, "model_columns.json"), "r") as f:
+    model_columns = json.load(f)
+
 
 st.set_page_config(
     page_title="Car Price Predictor",
@@ -28,19 +43,16 @@ header {visibility: hidden;}
     padding-top: 2rem;
 }
 
-/* Input labels */
 label[data-testid="stWidgetLabel"] p {
     color: #1A1A1A !important;
     font-size: 0.85rem !important;
     font-weight: 500 !important;
 }
 
-/* Cursor fix for dropdowns */
 [data-testid="stSelectbox"] * {
     cursor: pointer !important;
 }
 
-/* Predict button */
 div.stButton > button {
     background-color: #1A1A1A;
     color: #FDFDFD;
@@ -59,14 +71,12 @@ div.stButton > button:hover {
     transform: translateY(-1px);
 }
 
-/* Divider */
 .custom-divider {
     border: none;
     border-top: 1px solid #E2E8F0;
     margin: 0.5rem 0 1.5rem 0;
 }
 
-/* Title */
 .main-title {
     font-size: 2.2rem;
     font-weight: 700;
@@ -81,7 +91,6 @@ div.stButton > button:hover {
     margin-top: 0.2rem;
 }
 
-/* Result card */
 .result-card {
     border: 1px solid #1A1A1A;
     border-radius: 2px;
@@ -153,36 +162,44 @@ with left:
 # ─── Result ────────────────────────────────────────────────────
 with right:
     if predict_btn:
-        payload = {
-            "vehicle_age":       vehicle_age,
-            "km_driven":         km_driven,
-            "mileage":           mileage,
-            "engine":            engine,
-            "max_power":         max_power,
-            "seats":             seats,
-            "brand":             brand,
-            "fuel_type":         fuel_type,
-            "transmission_type": transmission_type,
-            "seller_type":       seller_type
-        }
-
         try:
-            response = requests.post("http://127.0.0.1:8000/predict", json=payload)
+            # Build input dataframe
+            input_df = pd.DataFrame(columns=model_columns)
+            input_df.loc[0] = 0
 
-            if response.status_code == 200:
-                price = response.json()["predicted_price"]
-                st.markdown(f"""
-                <div class="result-card">
-                    <p class="result-label">Estimated Resale Value</p>
-                    <p class="result-price">₹{price:,.0f}</p>
-                    <p class="result-note">{vehicle_age} yr old {brand} · {km_driven:,} km · {fuel_type} · {transmission_type}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.error("API returned an error. Please try again.")
+            # Fill numeric values
+            input_df["vehicle_age"] = vehicle_age
+            input_df["km_driven"]   = km_driven
+            input_df["mileage"]     = mileage
+            input_df["engine"]      = engine
+            input_df["max_power"]   = max_power
+            input_df["seats"]       = seats
 
-        except Exception:
-            st.error("Could not connect to the API. Make sure the backend is running.")
+            # Fill OHE columns
+            for col in [
+                f"brand_{brand}",
+                f"fuel_type_{fuel_type}",
+                f"transmission_type_{transmission_type}",
+                f"seller_type_{seller_type}"
+            ]:
+                if col in model_columns:
+                    input_df[col] = 1
+
+            # Scale and predict
+            input_scaled = scaler.transform(input_df)
+            log_price    = model.predict(input_scaled)
+            price        = round(float(np.exp(log_price[0])), 2)
+
+            st.markdown(f"""
+            <div class="result-card">
+                <p class="result-label">Estimated Resale Value</p>
+                <p class="result-price">₹{price:,.0f}</p>
+                <p class="result-note">{vehicle_age} yr old {brand} · {km_driven:,} km · {fuel_type} · {transmission_type}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
 
     else:
         st.markdown("""
